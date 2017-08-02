@@ -136,6 +136,7 @@ int main(int argc, char *argv[]){
   t1->SetBranchAddress("tsoslocalphi",  &tsoslocalphi );
   t1->SetBranchAddress("tsoslocaltheta",  &tsoslocaltheta );
   t1->SetBranchAddress("tsosBdotY",  &tsosBdotY );
+  t1->SetBranchAddress("clusterstripChargeStripNr",  &clusterstripChargeStripNr );
   t1->SetBranchAddress("clusterstripChargeTotWidth",  &clusterstripChargeTotWidth );
   t1->SetBranchAddress("clusterstripChargeTotCharge",  &clusterstripChargeTotCharge );
   t1->SetBranchAddress("clusterstripChargeLocalTrackPhi",  &clusterstripChargeLocalTrackPhi );
@@ -151,8 +152,8 @@ int main(int argc, char *argv[]){
   cout << "in here a" << endl;
   Int_t nentries = (Int_t)t1->GetEntries();
   cout << "entries " << nentries << endl;
-
   cout << "in here b" << endl;
+
   ///fill variables from tree 1
   for (Int_t e=0; e<nentries; e++) 
     {
@@ -190,6 +191,9 @@ int main(int argc, char *argv[]){
 		  subclusterstripChargeLocalTrackPhi.push_back(clusterstripChargeLocalTrackPhi->at(k));
 		  subclusterstripChargeLocalTrackTheta.push_back(clusterstripChargeLocalTrackTheta->at(k));
 		  subclusterstripChargeGlobalTrackTheta.push_back(clusterstripChargeGlobalTrackTheta->at(k));
+		  subclusterstripChargeTotWidth.push_back(clusterstripChargeTotWidth->at(k));
+		  subclusterstripChargeStripNr.push_back(clusterstripChargeStripNr->at(k));
+		  subclusterstripChargeTotCharge.push_back(clusterstripChargeTotCharge->at(k));
 
 		}
 	    }
@@ -251,14 +255,15 @@ int main(int argc, char *argv[]){
   TH1F* clusterWidthWOSaturationData = new TH1F("clusterWidthWOSaturationData", "clusterWidthWOSaturationData", 15, 0, 15 );
   TH1F* clusterChargePerStripWOSaturationData = new TH1F("clusterChargePerStripWOSaturationData", "clusterChargePerStripWOSaturationData", 300, 0, 300 );
   
-  cout<<"in line 262"<<endl;
+  cout<<"in line 254"<<endl;
 for(uint32_t m = 0; m<subclusterstripChargeLayerwheel.size(); m++)
     {
       if(subclusterstripChargeLayerwheel.at(m) == 3)
 	{
-
+	  //	  cout<<"in line 259 "<<endl;
 	  if(lClusWidth==0 || clusterEnd==true )
 	    {
+	      cout<<"in line 262"<<endl;
 	      lstripNr = subclusterstripChargeStripNr.at(m);
 	      lstripCh = subclusterstripCharge.at(m);
 	      lClusWidth = subclusterstripChargeTotWidth.at(m);
@@ -269,6 +274,7 @@ for(uint32_t m = 0; m<subclusterstripChargeLayerwheel.size(); m++)
 	    }
 	  if(stripCounter <= lClusWidth)
 	    {
+	      cout<<"in line 273"<<endl;
 	      clusterEnd = false;
 	      if(lstripCh<subclusterstripCharge.at(m))
 		{
@@ -280,7 +286,7 @@ for(uint32_t m = 0; m<subclusterstripChargeLayerwheel.size(); m++)
 	    
 	  if(stripCounter == lClusWidth)
 	    {
-	      //cout << "cluster charge final into profile " << lstripCh << " m " << m << endl;
+	      cout << "cluster charge final into profile " << lstripCh << " m " << m << endl;
 	      leadingStripProfileData->Fill(lstripNr, lstripCh);
 	      clusterStripCahrgeAsFceTanThetaData->Fill(tan(subclusterstripChargeLocalTrackTheta.at(m)), lstripCh);
 	      double prev = stripChargeSum.at(lstripNr);
@@ -305,7 +311,7 @@ for(uint32_t m = 0; m<subclusterstripChargeLayerwheel.size(); m++)
 		  if(maxChrg < 253)
 		    clusterChargePerStripWOSaturationData->Fill(clusterVector.at(ch));
 		  int32_t positionValue = ch-(maxChrgCtr);
-		  //cout << "charge position " << positionValue << " chareg " << clusterVector.at(ch) << endl;
+		  cout << "charge position " << positionValue << " chareg " << clusterVector.at(ch) << endl;
 		  clusterShapeData->Fill( positionValue ,clusterVector.at(ch) );
 		  if( subclusterstripChargeLocalTrackTheta.at(m)>= 0)
 		    clusterShapeDataPositive->Fill( ch+1 ,clusterVector.at(ch) );
@@ -347,5 +353,17 @@ for(uint32_t m = 0; m<subclusterstripChargeLayerwheel.size(); m++)
  clusterShape3DataPositive->DrawNormalized("P"); 
  clusterShape3DataNegative->DrawNormalized("P same hist e"); 
  c22Positive.SaveAs("clustershape.pdf");
+
+ clusterShape2DataPositive->SetMarkerStyle(kFullCircle);
+ clusterShape2DataNegative->SetMarkerStyle(kFullCircle);
+ clusterShape2DataPositive->SetMarkerColor(kPink);
+ clusterShape2DataPositive->SetMarkerColor(kBlue);
+ clusterShape2DataPositive->SetMaximum(1.5*  clusterShape2DataPositive->GetMaximum());
+ TCanvas cPositive("clusterShape2Positive","clusterShape2Positive");
+ clusterShape2DataPositive->DrawNormalized("P");
+ clusterShape2DataNegative->DrawNormalized("P same hist e");
+ cPositive.SaveAs("clustershapemorethan3.pdf");
+
+
  return 0;
 }
